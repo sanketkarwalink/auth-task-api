@@ -6,6 +6,8 @@ import com.sanket.authapp.entity.User;
 import com.sanket.authapp.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,12 +20,23 @@ public class AuthController {
     public AuthController(AuthService authService) {this.authService = authService;}
 
     @PostMapping("/register")
-    public ApiResponse register(@RequestBody @Valid RegisterRequest request) {
-        return authService.register(request);
+    public ResponseEntity<ApiResponse> register(@RequestBody @Valid RegisterRequest request) {
+        ApiResponse response = authService.register(request);
+        if(response.getStatus().equals("success")){
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
     @PostMapping("/login")
-    public ApiResponse login(@RequestBody @Valid LoginRequest request ) {
-        return authService.login(request);
+    public ResponseEntity<ApiResponse> login(@RequestBody @Valid LoginRequest request ) {
+        ApiResponse response = authService.login(request);
+        if(response.getStatus().equals("success")){
+            return ResponseEntity.ok(response);
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
     }
     @GetMapping("/hello")
     public String hello(){
@@ -48,12 +61,12 @@ public class AuthController {
         return authService.deleteUser(id);
     }
 
-    @PostMapping("/tasks/{id}")
+    @PostMapping("/api/tasks/{id}")
     public ApiResponse createTask(@PathVariable Long id, @RequestBody TaskRequest task){
         return authService.createTask(id,task);
     }
 
-    @GetMapping("/tasks/{id}")
+    @GetMapping("/api/tasks/{id}")
     public List<TaskResponse> getTasks(@PathVariable Long id){
         return authService.getTasksByUser(id);
     }

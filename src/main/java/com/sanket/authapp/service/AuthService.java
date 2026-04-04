@@ -5,6 +5,7 @@ import com.sanket.authapp.entity.Task;
 import com.sanket.authapp.entity.User;
 import com.sanket.authapp.repository.TaskRepository;
 import com.sanket.authapp.repository.UserRepository;
+import com.sanket.authapp.security.JwtService;
 import jakarta.validation.Valid;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,11 @@ public class AuthService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final TaskRepository taskRepository;
-    public AuthService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, TaskRepository taskRepository) {this.userRepository = userRepository;
+    private final JwtService jwtService;
+    public AuthService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, TaskRepository taskRepository, JwtService jwtService) {this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.taskRepository = taskRepository;
+        this.jwtService = jwtService;
     }
 
     public ApiResponse register(RegisterRequest request) {
@@ -40,7 +43,8 @@ public class AuthService {
             return new ApiResponse("Error","User not found");
         } else{
             if(bCryptPasswordEncoder.matches(request.getPassword(), user.getPassword())){
-                return new ApiResponse("success","User logged in successfully");
+                String token = jwtService.generateToken(user.getEmail());
+                return new ApiResponse("success",token);
             } else{
                 return new  ApiResponse("Error","Incorrect password");
             }
