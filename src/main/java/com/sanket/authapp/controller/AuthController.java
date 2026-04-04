@@ -1,11 +1,8 @@
 package com.sanket.authapp.controller;
 
-import com.sanket.authapp.dto.ApiResponse;
-import com.sanket.authapp.dto.LoginRequest;
-import com.sanket.authapp.dto.RegisterRequest;
-import com.sanket.authapp.dto.UserResponse;
+import com.sanket.authapp.dto.*;
+import com.sanket.authapp.entity.Task;
 import com.sanket.authapp.entity.User;
-import com.sanket.authapp.repository.UserRepository;
 import com.sanket.authapp.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,4 +47,15 @@ public class AuthController {
     public String deleteUser(@PathVariable Long id){
         return authService.deleteUser(id);
     }
+
+    @PostMapping("/tasks/{id}")
+    public ApiResponse createTask(@PathVariable Long id, @RequestBody TaskRequest task){
+        return authService.createTask(id,task);
+    }
+
+    @GetMapping("/tasks/{id}")
+    public List<TaskResponse> getTasks(@PathVariable Long id){
+        return authService.getTasksByUser(id);
+    }
 }
+

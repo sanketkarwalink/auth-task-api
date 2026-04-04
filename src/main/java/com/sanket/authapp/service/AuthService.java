@@ -27,6 +27,7 @@ public class AuthService {
             return new ApiResponse("error","Email already exists");
         }
         User user = new User();
+        user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
         userRepository.save(user);
@@ -49,7 +50,7 @@ public class AuthService {
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(user -> new UserResponse(user.getId(), user.getEmail()))
+                .map(user -> new UserResponse(user.getId(), user.getName(), user.getEmail()))
                 .toList();
     }
 
@@ -77,12 +78,9 @@ public class AuthService {
         return "User deleted successfully";
     }
 
-    public ApiResponse createTask(String email, TaskRequest request){
-        User user = userRepository.findByEmail(email);
-
-        if(user == null){
-            return new ApiResponse("Error","User not found");
-        }
+    public ApiResponse createTask(Long id, TaskRequest request){
+        User user = userRepository.findById(id)
+                .orElseThrow( () -> new RuntimeException("User not found"));
 
         Task task = new Task();
         task.setTitle(request.getTitle());
@@ -94,5 +92,16 @@ public class AuthService {
         taskRepository.save(task);
 
         return new ApiResponse("success","Task created successfully");
+    }
+
+    public List<TaskResponse> getTasksByUser(Long user_id){
+        return taskRepository.findByUser_Id(user_id)
+                .stream()
+                .map(tasks -> new TaskResponse(
+                        tasks.getId(),
+                        tasks.getTitle(),
+                        tasks.getDescription(),
+                        tasks.getStatus()
+                )).toList();
     }
 }

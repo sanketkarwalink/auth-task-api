@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
 
+    private String name;
     @Email(message = "Invalid email format")
     @NotBlank(message = "Email is required")
     private String email;
@@ -19,6 +20,7 @@ public class RegisterRequest {
     )
     private String password;
 
+
     // getters only (no setter needed for now)
     public String getEmail() {
         return email;
@@ -26,5 +28,9 @@ public class RegisterRequest {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getName(){
+        return name;
     }
 }

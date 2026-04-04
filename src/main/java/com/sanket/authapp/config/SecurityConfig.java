@@ -10,14 +10,20 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {return new BCryptPasswordEncoder();}
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // ✅ everything allowed
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .anyRequest().permitAll()
+                )
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.disable())
                 );
 
         return http.build();
