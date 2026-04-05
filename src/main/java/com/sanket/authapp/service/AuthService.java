@@ -83,10 +83,14 @@ public class AuthService {
         return "User deleted successfully";
     }
 
-    public ApiResponse createTask(Long id, TaskRequest request){
-        User user = userRepository.findById(id)
-                .orElseThrow( () -> new RuntimeException("User not found"));
+    public ApiResponse createTask(TaskRequest request){
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
+        User user = userRepository.findByEmail(currentEmail);
+
+        if(user == null){
+            return new ApiResponse("error", "User not found");
+        }
         Task task = new Task();
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());

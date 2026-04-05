@@ -61,9 +61,10 @@ public class AuthController {
         return authService.deleteUser(id);
     }
 
-    @PostMapping("/api/tasks/{id}")
-    public ApiResponse createTask(@PathVariable Long id, @RequestBody TaskRequest task){
-        return authService.createTask(id,task);
+    @PostMapping("/api/tasks")
+    public ResponseEntity<ApiResponse> createTask(@RequestBody TaskRequest task){
+        ApiResponse response = authService.createTask(task);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/api/tasks/{id}")
