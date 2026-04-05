@@ -67,9 +67,9 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/api/tasks/{id}")
-    public List<TaskResponse> getTasks(@PathVariable Long id){
-        return authService.getTasksByUser(id);
+    @GetMapping("/api/tasks")
+    public ResponseEntity<List<TaskResponse>> getTasks(){
+        return ResponseEntity.ok(authService.getMyTasks());
     }
 
     @DeleteMapping("/api/tasks/{id}")

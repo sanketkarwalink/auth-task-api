@@ -103,8 +103,10 @@ public class AuthService {
         return new ApiResponse("success","Task created successfully");
     }
 
-    public List<TaskResponse> getTasksByUser(Long user_id){
-        return taskRepository.findByUser_Id(user_id)
+    public List<TaskResponse> getMyTasks(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return taskRepository.findByUser_Email(email)
                 .stream()
                 .map(tasks -> new TaskResponse(
                         tasks.getId(),
