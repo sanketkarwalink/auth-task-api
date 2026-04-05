@@ -70,5 +70,16 @@ public class AuthController {
     public List<TaskResponse> getTasks(@PathVariable Long id){
         return authService.getTasksByUser(id);
     }
+
+    @DeleteMapping("/api/tasks/{id}")
+    public ResponseEntity<ApiResponse> deleteTask(@PathVariable Long id){
+        ApiResponse response = authService.deleteTask(id);
+
+        if(response.getStatus().equals("success")){
+            return ResponseEntity.ok(response);
+        }else{
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        }
+    }
 }
 

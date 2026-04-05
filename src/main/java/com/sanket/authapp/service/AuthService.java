@@ -7,6 +7,7 @@ import com.sanket.authapp.repository.TaskRepository;
 import com.sanket.authapp.repository.UserRepository;
 import com.sanket.authapp.security.JwtService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -107,5 +108,18 @@ public class AuthService {
                         tasks.getDescription(),
                         tasks.getStatus()
                 )).toList();
+    }
+
+    public ApiResponse deleteTask(Long id){
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if (!task.getUser().getEmail().equals(currentUserEmail)) {
+            return new ApiResponse("error", "You are not authorized to delete this task!");
+        }
+        taskRepository.delete(task);
+        return new ApiResponse("success", "Task deleted successfully");
     }
 }
