@@ -62,7 +62,7 @@ public class AuthController {
     }
 
     @PostMapping("/api/tasks")
-    public ResponseEntity<ApiResponse> createTask(@RequestBody TaskRequest task){
+    public ResponseEntity<ApiResponse> createTask(@Valid @RequestBody TaskRequest task){
         ApiResponse response = authService.createTask(task);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
