@@ -82,5 +82,11 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
     }
+
+    @PatchMapping("/api/tasks/{id}/status")
+    public ResponseEntity<ApiResponse> updateTaskStatus(@PathVariable Long id){
+        ApiResponse response = authService.updateTask(id);
+        return ResponseEntity.ok(response);
+    }
 }
 

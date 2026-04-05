@@ -128,4 +128,23 @@ public class AuthService {
         taskRepository.delete(task);
         return new ApiResponse("success", "Task deleted successfully");
     }
+
+    public ApiResponse updateTask(Long taskId){
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if(!task.getUser().getEmail().equals(currentUserEmail)){
+            return new ApiResponse("error", "You are not authorized to update this task!");
+        }
+
+        if(task.getStatus().equals("PENDING")){
+            task.setStatus("COMPLETED");
+        }else{
+            task.setStatus("PENDING");
+        }
+
+        taskRepository.save(task);
+        return new ApiResponse("success", "Task updated successfully" + task.getStatus());
+    }
 }
