@@ -13,11 +13,14 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 @Service
 public class AuthService {
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final TaskRepository taskRepository;
@@ -37,20 +40,25 @@ public class AuthService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
+        log.info("Register request for email: {}", request.getEmail());
         userRepository.save(user);
+
         return new ApiResponse("success","User registered successfully");
     }
 
     public ApiResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail());
         if(user == null){
+            log.warn("User not found with email: {}", request.getEmail());
             throw new ResourceNotFoundException("User not found");
         } else{
             if(bCryptPasswordEncoder.matches(request.getPassword(), user.getPassword())){
                 String token = jwtService.generateToken(user.getEmail());
+                log.info("User logged in successfully: {}", user.getEmail());
                 return new ApiResponse("success",token);
             } else{
-                return new  ApiResponse("Error","Incorrect password");
+                log.warn("Login failed for email: {}", request.getEmail());
+                throw new BadRequestException("Incorrect password");
             }
         }
     }
@@ -92,6 +100,7 @@ public class AuthService {
         User user = userRepository.findByEmail(currentEmail);
 
         if(user == null){
+            log.warn("User not found with email: {}", currentEmail);
             throw new ResourceNotFoundException("User not found");
         }
         Task task = new Task();
@@ -102,7 +111,7 @@ public class AuthService {
         task.setUser(user);
 
         taskRepository.save(task);
-
+        log.info("Task created successfully for user: {}", currentEmail);
         return new ApiResponse("success","Task created successfully");
     }
 
@@ -129,6 +138,7 @@ public class AuthService {
             throw new BadRequestException("You are not authorized to delete this task!");
         }
         taskRepository.delete(task);
+        log.info("Task deleted successfully with id: {}", id);
         return new ApiResponse("success", "Task deleted successfully");
     }
 
@@ -138,7 +148,8 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         if(!task.getUser().getEmail().equals(currentUserEmail)){
-            return new ApiResponse("error", "You are not authorized to update this task!");
+            log.warn("Unauthorized update attempt for task id: {}", taskId);
+            throw new BadRequestException("You are not authorized to update this task!");
         }
 
         if(task.getStatus()==TaskStatus.PENDING){
@@ -148,6 +159,7 @@ public class AuthService {
         }
 
         taskRepository.save(task);
+        log.info("Task updated successfully with id: {}", taskId);
         return new ApiResponse("success", "Task updated successfully" + task.getStatus());
     }
 }
