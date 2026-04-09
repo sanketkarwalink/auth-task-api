@@ -21,7 +21,8 @@ public class Task {
 
     // we will use simple string for now
     @Setter
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
 
     // getters
     public Long getId() {
@@ -36,7 +37,7 @@ public class Task {
         return description;
     }
 
-    public String getStatus() {
+    public TaskStatus getStatus() {
         return status;
     }
 

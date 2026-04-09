@@ -2,7 +2,10 @@ package com.sanket.authapp.service;
 
 import com.sanket.authapp.dto.*;
 import com.sanket.authapp.entity.Task;
+import com.sanket.authapp.entity.TaskStatus;
 import com.sanket.authapp.entity.User;
+import com.sanket.authapp.exception.BadRequestException;
+import com.sanket.authapp.exception.ResourceNotFoundException;
 import com.sanket.authapp.repository.TaskRepository;
 import com.sanket.authapp.repository.UserRepository;
 import com.sanket.authapp.security.JwtService;
@@ -28,7 +31,7 @@ public class AuthService {
     public ApiResponse register(RegisterRequest request) {
         User existingUser = userRepository.findByEmail(request.getEmail());
         if (existingUser != null){
-            return new ApiResponse("error","Email already exists");
+            throw new BadRequestException("Email already exists");
         }
         User user = new User();
         user.setName(request.getName());
@@ -41,7 +44,7 @@ public class AuthService {
     public ApiResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail());
         if(user == null){
-            return new ApiResponse("Error","User not found");
+            throw new ResourceNotFoundException("User not found");
         } else{
             if(bCryptPasswordEncoder.matches(request.getPassword(), user.getPassword())){
                 String token = jwtService.generateToken(user.getEmail());
@@ -61,12 +64,12 @@ public class AuthService {
 
     public User getUserById(Long id){
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     public User updateUser(Long id, User updatedUser){
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         user.setEmail(updatedUser.getEmail());
         user.setPassword(bCryptPasswordEncoder.encode(updatedUser.getPassword()));
@@ -76,7 +79,7 @@ public class AuthService {
 
     public String deleteUser(Long id){
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         userRepository.delete(user);
 
@@ -89,12 +92,12 @@ public class AuthService {
         User user = userRepository.findByEmail(currentEmail);
 
         if(user == null){
-            return new ApiResponse("error", "User not found");
+            throw new ResourceNotFoundException("User not found");
         }
         Task task = new Task();
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
-        task.setStatus("PENDING");
+        task.setStatus(TaskStatus.PENDING);
 
         task.setUser(user);
 
@@ -120,10 +123,10 @@ public class AuthService {
         String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         if (!task.getUser().getEmail().equals(currentUserEmail)) {
-            return new ApiResponse("error", "You are not authorized to delete this task!");
+            throw new BadRequestException("You are not authorized to delete this task!");
         }
         taskRepository.delete(task);
         return new ApiResponse("success", "Task deleted successfully");
@@ -132,16 +135,16 @@ public class AuthService {
     public ApiResponse updateTask(Long taskId){
         String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         if(!task.getUser().getEmail().equals(currentUserEmail)){
             return new ApiResponse("error", "You are not authorized to update this task!");
         }
 
-        if(task.getStatus().equals("PENDING")){
-            task.setStatus("COMPLETED");
+        if(task.getStatus()==TaskStatus.PENDING){
+            task.setStatus(TaskStatus.COMPLETED);
         }else{
-            task.setStatus("PENDING");
+            task.setStatus(TaskStatus.PENDING);
         }
 
         taskRepository.save(task);
