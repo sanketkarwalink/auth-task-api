@@ -29,9 +29,9 @@ public class TaskController {
     }
 
     //get my task
-    @GetMapping("/tasks")
-    public ResponseEntity<List<TaskResponse>> getTasks(Authentication authentication){
-        return ResponseEntity.ok(taskService.getMyTasks(authentication.getName()));
+    @GetMapping
+    public ResponseEntity<List<TaskResponse>> getTasks(Authentication authentication, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        return ResponseEntity.ok(taskService.getMyTasks(authentication.getName(), page, size));
     }
 
     //delete task by id

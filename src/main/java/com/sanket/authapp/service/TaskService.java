@@ -13,6 +13,8 @@ import com.sanket.authapp.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,7 @@ public class TaskService {
 
 
     //Create Task
+    @Transactional
     public ApiResponse createTask(TaskRequest request, String currentUserEmail){
 
         User user = userRepository.findByEmail(currentUserEmail);
@@ -53,9 +56,11 @@ public class TaskService {
     }
 
     //GetMyTask
-    public List<TaskResponse> getMyTasks(String currentUserEmail){
+    @Transactional
+    public List<TaskResponse> getMyTasks(String currentUserEmail, int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
 
-        return taskRepository.findByUser_Email(currentUserEmail)
+        return taskRepository.findByUser_Email(currentUserEmail, pageable)
                 .stream()
                 .map(tasks -> new TaskResponse(
                         tasks.getId(),
