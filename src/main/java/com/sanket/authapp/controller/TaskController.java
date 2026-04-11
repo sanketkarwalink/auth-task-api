@@ -21,7 +21,7 @@ public class TaskController {
     }
 
     //Create task
-    @PostMapping("/")
+    @PostMapping("/create")
     public ResponseEntity<ApiResponse> createTask(@Valid @RequestBody TaskRequest task){
         ApiResponse response = taskService.createTask(task);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -46,10 +46,9 @@ public class TaskController {
     }
 
 
-    //Update task status
+    //Simple update task
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse> updateTaskStatus(@PathVariable Long id){
-        ApiResponse response = taskService.updateTask(id);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(taskService.updateTask(id));
     }
 }

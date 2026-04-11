@@ -10,8 +10,10 @@ import com.sanket.authapp.exception.BadRequestException;
 import com.sanket.authapp.exception.ResourceNotFoundException;
 import com.sanket.authapp.repository.TaskRepository;
 import com.sanket.authapp.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -81,25 +83,28 @@ public class TaskService {
         return new ApiResponse("success", "Task deleted successfully");
     }
 
-    //Update Task
+    //Simple update task
+    @Transactional
     public ApiResponse updateTask(Long taskId){
-        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null || !auth.isAuthenticated()){
+            throw new BadRequestException("User not authenticated");
+        }
+        String currentUserEmail = auth.getName();
+        log.info("Current user: {}", currentUserEmail);
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
+        if(task.getUser() == null || task.getUser().getEmail() == null){
+            throw new IllegalStateException("Task user not set properly");
+        }
+
         if(!task.getUser().getEmail().equals(currentUserEmail)){
-            log.warn("Unauthorized update attempt for task id: {}", taskId);
-            throw new BadRequestException("You are not authorized to update this task!");
+            throw new BadRequestException("You are not authorized to update this task");
         }
 
-        if(task.getStatus()==TaskStatus.PENDING){
-            task.setStatus(TaskStatus.COMPLETED);
-        }else{
-            task.setStatus(TaskStatus.PENDING);
-        }
+        task.toggleStatus();
 
-        taskRepository.save(task);
-        log.info("Task updated successfully with id: {}", taskId);
-        return new ApiResponse("success", "Task updated successfully" + task.getStatus());
+        return new ApiResponse("success", "Task updated successfully");
     }
 }
