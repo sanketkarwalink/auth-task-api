@@ -43,50 +43,5 @@ public class AuthController {
         return "Hello secured user";
     }
 
-    @GetMapping("/users")
-    public List<UserResponse> getUsers() {return authService.getAllUsers();}
-
-    @GetMapping("/users/{id}")
-    public User getUserById(@PathVariable Long id){
-        return authService.getUserById(id);
-    }
-
-    @PutMapping("/users/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User user) {
-        return authService.updateUser(id, user);
-    }
-
-    @DeleteMapping("/users/{id}")
-    public String deleteUser(@PathVariable Long id){
-        return authService.deleteUser(id);
-    }
-
-    @PostMapping("/api/tasks")
-    public ResponseEntity<ApiResponse> createTask(@Valid @RequestBody TaskRequest task){
-        ApiResponse response = authService.createTask(task);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @GetMapping("/api/tasks")
-    public ResponseEntity<List<TaskResponse>> getTasks(){
-        return ResponseEntity.ok(authService.getMyTasks());
-    }
-
-    @DeleteMapping("/api/tasks/{id}")
-    public ResponseEntity<ApiResponse> deleteTask(@PathVariable Long id){
-        ApiResponse response = authService.deleteTask(id);
-
-        if(response.getStatus().equals("success")){
-            return ResponseEntity.ok(response);
-        }else{
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-        }
-    }
-
-    @PatchMapping("/api/tasks/{id}/status")
-    public ResponseEntity<ApiResponse> updateTaskStatus(@PathVariable Long id){
-        ApiResponse response = authService.updateTask(id);
-        return ResponseEntity.ok(response);
-    }
 }
 

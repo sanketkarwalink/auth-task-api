@@ -1,8 +1,9 @@
 package com.sanket.authapp.entity;
 
 import jakarta.persistence.*;
-import lombok.Setter;
+import lombok.Data;
 
+@Data
 @Entity
 public class Task {
     @ManyToOne
@@ -13,40 +14,13 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // setters
-    @Setter
+
     private String title;
-    @Setter
     private String description;
 
     // we will use simple string for now
-    @Setter
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
-    // getters
-    public Long getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
 
 }
