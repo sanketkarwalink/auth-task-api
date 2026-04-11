@@ -13,8 +13,7 @@ import com.sanket.authapp.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,7 +22,7 @@ import java.util.List;
 public class TaskService {
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
 
 
     public TaskService(UserRepository userRepository, TaskRepository taskRepository) {
@@ -67,33 +66,25 @@ public class TaskService {
     }
 
     //Delete task
-    public ApiResponse deleteTask(Long id, String currentUserEmail){
+    @PreAuthorize("@taskSecurity.isOwner(#id, authentication.name)")
+    @Transactional
+    public ApiResponse deleteTask(Long id){
 
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        if (!task.getUser().getEmail().equals(currentUserEmail)) {
-            throw new BadRequestException("You are not authorized to delete this task!");
-        }
+
         taskRepository.delete(task);
         log.info("Task deleted successfully with id: {}", id);
         return new ApiResponse("success", "Task deleted successfully");
     }
 
     //Simple update task
+    @PreAuthorize("@taskSecurity.isOwner(#taskId, authentication.name)")
     @Transactional
-    public ApiResponse updateTask(Long taskId, String currentUserEmail){
-        log.info("Current user: {}", currentUserEmail);
+    public ApiResponse updateTask(Long taskId){
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
-
-        if(task.getUser() == null || task.getUser().getEmail() == null){
-            throw new IllegalStateException("Task user not set properly");
-        }
-
-        if(!task.getUser().getEmail().equals(currentUserEmail)){
-            throw new BadRequestException("You are not authorized to update this task");
-        }
 
         task.toggleStatus();
 

@@ -37,7 +37,7 @@ public class TaskController {
     //delete task by id
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse> deleteTask(@PathVariable Long id, Authentication authentication){
-        ApiResponse response = taskService.deleteTask(id, authentication.getName());
+        ApiResponse response = taskService.deleteTask(id);
 
         if(response.getStatus().equals("success")){
             return ResponseEntity.ok(response);
@@ -50,6 +50,6 @@ public class TaskController {
     //Simple update task
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse> updateTaskStatus(@PathVariable Long id, Authentication authentication){
-        return ResponseEntity.ok(taskService.updateTask(id, authentication.getName()));
+        return ResponseEntity.ok(taskService.updateTask(id));
     }
 }
