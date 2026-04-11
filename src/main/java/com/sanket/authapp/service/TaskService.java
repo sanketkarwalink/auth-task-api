@@ -33,13 +33,12 @@ public class TaskService {
 
 
     //Create Task
-    public ApiResponse createTask(TaskRequest request){
-        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+    public ApiResponse createTask(TaskRequest request, String currentUserEmail){
 
-        User user = userRepository.findByEmail(currentEmail);
+        User user = userRepository.findByEmail(currentUserEmail);
 
         if(user == null){
-            log.warn("User not found with email: {}", currentEmail);
+            log.warn("User not found with email: {}", currentUserEmail);
             throw new ResourceNotFoundException("User not found");
         }
         Task task = new Task();
@@ -50,15 +49,14 @@ public class TaskService {
         task.setUser(user);
 
         taskRepository.save(task);
-        log.info("Task created successfully for user: {}", currentEmail);
+        log.info("Task created successfully for user: {}", currentUserEmail);
         return new ApiResponse("success","Task created successfully");
     }
 
     //GetMyTask
-    public List<TaskResponse> getMyTasks(){
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+    public List<TaskResponse> getMyTasks(String currentUserEmail){
 
-        return taskRepository.findByUser_Email(email)
+        return taskRepository.findByUser_Email(currentUserEmail)
                 .stream()
                 .map(tasks -> new TaskResponse(
                         tasks.getId(),
@@ -69,8 +67,7 @@ public class TaskService {
     }
 
     //Delete task
-    public ApiResponse deleteTask(Long id){
-        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+    public ApiResponse deleteTask(Long id, String currentUserEmail){
 
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
@@ -85,12 +82,7 @@ public class TaskService {
 
     //Simple update task
     @Transactional
-    public ApiResponse updateTask(Long taskId){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if(auth == null || !auth.isAuthenticated()){
-            throw new BadRequestException("User not authenticated");
-        }
-        String currentUserEmail = auth.getName();
+    public ApiResponse updateTask(Long taskId, String currentUserEmail){
         log.info("Current user: {}", currentUserEmail);
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));

@@ -7,6 +7,7 @@ import com.sanket.authapp.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,21 +23,21 @@ public class TaskController {
 
     //Create task
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse> createTask(@Valid @RequestBody TaskRequest task){
-        ApiResponse response = taskService.createTask(task);
+    public ResponseEntity<ApiResponse> createTask(@Valid @RequestBody TaskRequest task, Authentication authentication){
+        ApiResponse response = taskService.createTask(task, authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     //get my task
     @GetMapping("/tasks")
-    public ResponseEntity<List<TaskResponse>> getTasks(){
-        return ResponseEntity.ok(taskService.getMyTasks());
+    public ResponseEntity<List<TaskResponse>> getTasks(Authentication authentication){
+        return ResponseEntity.ok(taskService.getMyTasks(authentication.getName()));
     }
 
     //delete task by id
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteTask(@PathVariable Long id){
-        ApiResponse response = taskService.deleteTask(id);
+    public ResponseEntity<ApiResponse> deleteTask(@PathVariable Long id, Authentication authentication){
+        ApiResponse response = taskService.deleteTask(id, authentication.getName());
 
         if(response.getStatus().equals("success")){
             return ResponseEntity.ok(response);
@@ -48,7 +49,7 @@ public class TaskController {
 
     //Simple update task
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse> updateTaskStatus(@PathVariable Long id){
-        return ResponseEntity.ok(taskService.updateTask(id));
+    public ResponseEntity<ApiResponse> updateTaskStatus(@PathVariable Long id, Authentication authentication){
+        return ResponseEntity.ok(taskService.updateTask(id, authentication.getName()));
     }
 }
